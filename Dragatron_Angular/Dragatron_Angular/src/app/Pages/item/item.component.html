@@ -1,0 +1,237 @@
+
+
+<div class="container-fluid">
+  <div class="container">
+    <br />
+    <br />
+
+    <p-table #dt [columns]="cols" *ngIf="!AddFormOpen" [value]="ItemsList" [rows]="10" [responsive]="true"
+             [paginator]="true" [scrollable]="true" scrollHeight="333px" [rowHover]="true" [style]="{width:'100%'}">
+      <ng-template pTemplate="caption">
+        <div class="row">
+          <div class="col-lg-6" style="text-align: left;margin-bottom: 0;">
+            <i class="fa fa-download" pTooltip="Export to excel" tooltipPosition="top"
+               aria-label="" (click)="dt.exportCSV()" style="font-size: 20px; color:#3e50b4; cursor:pointer;margin-left:-1px;"></i>
+
+
+
+            <i (click)="OpenAddForm()" class="fa fa-plus addIcon" pTooltip="Add Product" tooltipPosition="top" style="margin-left:12px;"></i>
+            <button  id="closemodal" type="button" class="btn btn-danger" (click)="BulkDelete()" style="margin-left: 10px;">Delete</button>
+            <!--<p class="CountGridRecords" style="margin-left:10%">{{dt.totalRecords}} out of {{ProductsList.length}} <mark style="color:darkblue">Products</mark></p>-->
+          </div>
+          <div class="col-lg-6" style="text-align: right;margin-bottom: 0;">
+            <!--<i class="fa fa-search" style="margin:3px 3px 0 0"></i>-->
+            <input type="text" class="global_search" pInputText size="50" placeholder="Global Filter" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width:auto">
+          </div>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="colgroup" let-columns>
+        <colgroup>
+          <col style="width:50px">
+          <col style="width:50px">
+          <col style="width:50px">
+          <col *ngFor="let col of columns" [ngStyle]="{'width': col.width}">
+        </colgroup>
+      </ng-template>
+      <ng-template pTemplate="header" let-columns>
+        <tr>
+          <th style="width:20%;">Edit</th>
+          <th style="width:20%;">Delete</th>
+          <th style="width:20%;">Select</th>
+          <!--<th style="width:12%;">Variants</th>-->
+          <th *ngFor="let col of columns" [pSortableColumn]="col.field">
+            <span>{{col.header}}</span>
+            <p-sortIcon [field]="col.field"></p-sortIcon>
+            <!--<input pInputText type="text" (input)="dt.filter($event.target.value, col.field, 'contains')">-->
+
+          </th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-rowData let-columns="columns">
+        <tr>
+          <td class="col-btn">
+            <i (click)="OpenEditForm(rowData)" class="fa fa-edit addIcon"></i>
+            <!--<div class="p-col-12"><p-checkbox name="group1" value="New York" label="New York" [(ngModel)]="selectedCities" inputId="ny"></p-checkbox></div>-->
+          </td>
+          <td class="col-btn">
+            <i pTooltip="Delete" (click)="confirmDelete(rowData)" class="fa fa-trash" style="color: red;" aria-hidden="true"></i>
+          </td>
+          <td class="col-btn">
+            <!--<p-checkbox name="group1"></p-checkbox>-->
+            <!--<p-checkbox></p-checkbox>-->
+            <p-checkbox name="groupname" value="val1" (onChange)="SelectedItems($event,rowData)"></p-checkbox>
+          </td>
+          
+
+          <td *ngFor="let col of columns" [ngSwitch]="col.field">
+            <span *ngSwitchDefault style="width : 150px;overflow:hidden;display:inline-block; text-overflow: ellipsis; white-space: nowrap;">{{rowData[col.field]}}</span>
+            <span *ngSwitchCase="'Date'">{{rowData[col.field]|date:'mediumDate'}}</span>
+
+            <div *ngSwitchCase="'ImageThumbNail'">
+              <img class="thumbnail" *ngIf="rowData[col.field]!=''&&rowData[col.field]!=null" [src]="rowData[col.field]" />
+              <span *ngIf="rowData[col.field]==''||rowData[col.field]==null" style="width:40%;">No Image</span>
+            </div>
+
+            <div *ngSwitchCase="'image'">
+              <u *ngIf="rowData[col.field]!=''&&rowData[col.field]!=null" style="color:blue;cursor:pointer" (click)="ShowImage(rowData.image)">View</u>
+              <span *ngIf="rowData[col.field]==''||rowData[col.field]==null" style="width:40%;">No Image</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+
+
+
+
+    <div class="row clearfix" style="width:100%;" *ngIf="AddFormOpen">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card cdt">
+          <!-- #region Add Form -->
+          <div>
+            <div class="body">
+              <h5 style="text-align:left;background-color: rgba(115, 115, 115, 0.0784313725490196);padding: 8px;">
+                <img src="https://img.icons8.com/cotton/40/000000/circled-left-2.png" (click)="CancelForm()" style="cursor:pointer;letter-spacing:1px;"> {{ButtonText}} Item
+              </h5>
+              <br />
+
+
+
+
+              <form [formGroup]="AddForm" (ngSubmit)="AddItem(AddForm.value)">
+                <div class="row" style="padding:9px;">
+                  <div class="col-lg-6 col-sm-6 col-sm-12 col-xs-12">
+                    <label for="Category"><b>Item Name</b></label>
+                    <div class="form-group">
+                      <div class="form-line">
+                        <input type="text" class="form-control" placeholder="Enter Item Name" formControlName="Itemname">
+                        <small class="text-danger" *ngIf="AddForm.controls.Itemname.touched && AddForm.controls.Itemname.errors?.required">Field is required</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-lg-6 col-sm-6 col-sm-12 col-xs-12">
+                    <label for="Category"><b>Item Price</b></label>
+                    <div class="form-group">
+                      <div class="form-line">
+                        <input type="text" class="form-control" placeholder="Enter Item Price" formControlName="Price">
+                        <small class="text-danger" *ngIf="AddForm.controls.Price.touched && AddForm.controls.Price.errors?.required">Field is required</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+
+
+
+                <div class="row" style="padding:9px;">
+                  <div class="col-lg-12 col-sm-12 col-sm-12 col-xs-12">
+                    <label for="Desc"><b>Item Description</b></label>
+                    <div class="form-group">
+                      <div class="form-line">
+                        <textarea type="text" class="form-control" placeholder="Enter Product description" formControlName="Description"> </textarea>
+                        <small class="text-danger" *ngIf="AddForm.controls.Description.touched && AddForm.controls.Description.errors?.required">Field is required</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="row" style="padding:9px;">
+                  <div class="col-lg-12 col-sm-12 col-sm-12 col-xs-12">
+                    <label for="Desc"><b>Item Image</b></label>
+                    <div class="col-8 offset-2">
+                      <input type="file" (change)="onImagePicked($event)" formControlName="image" accept="application/pdf,image/*" class="m-img-upload-btn" />
+                      <button class="btn btn-success btn-block" type="button">
+                        <i class="fa fa-upload"></i> Upload Images
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <br>
+                <div class="form-group" style="text-align:right">
+                  <button type="submit" [disabled]="AddForm.invalid" class="btn btn-primary m-t-15 waves-effect">{{ButtonText}}</button>&nbsp;
+                  <button type="button" style="margin-top:0px;" class="btn btn-danger m-t-15 waves-effect" (click)="CancelForm()">CANCEL</button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <!-- #endregion -->
+        </div>
+      </div>
+    </div>
+
+
+    <div id="myModal21" style="text-align:center" class="modal">
+      <span class="close" data-dismiss="modal">&times;</span>
+      <img style="width:50%;margin-left:25%" class="modal-content" src="{{Image}}" />
+    </div>
+
+  </div>
+</div>
+
+
+
+
+
+
+<style>
+
+  .thumbnail {
+    border: 1px solid #ddd; /* Gray border */
+    border-radius: 4px; /* Rounded border */
+    padding: 5px; /* Some padding */
+    width: 40% !important;
+    height: 33px;
+    margin-bottom: 0px;
+  }
+
+  /* Add a hover effect (blue shadow) */
+  thumbnail:hover {
+    box-shadow: 0 0 2px 1px rgba(0, 140, 186, 0.5);
+  }
+
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 100px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+  }
+
+  .modal-content {
+    -webkit-animation-name: zoom;
+    -webkit-animation-duration: 0.6s;
+    animation-name: zoom;
+    animation-duration: 0.6s;
+  }
+
+  .close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+
+  /*.close:hover,
+      .close:focus {
+        color: #bbb;
+        text-decoration: none;
+        cursor: pointer;
+      }*/
+
+  @media only screen and (max-width: 700px) {
+    .modal-content {
+      width: 100%;
+    }
+  }
+</style>
+
+
